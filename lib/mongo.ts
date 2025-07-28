@@ -1,18 +1,22 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient } from "mongodb";
 
-const client = new MongoClient(process.env.MONGODB_URI || '');
-const clientPromise: Promise<MongoClient>;
+const uri = process.env.MONGODB_URI || "";
 
-if (process.env.NODE_ENV === 'development') {
-  if (global._mongoClientPromise) {
-    clientPromise = global._mongoClientPromise;
-  } else {
+if (!uri) {
+  throw new Error("Define MONGODB_URI en .env.local");
+}
+
+const client = new MongoClient(uri);
+
+let clientPromise: Promise<MongoClient>;
+
+if (process.env.NODE_ENV === "development") {
+  if (!global._mongoClientPromise) {
     global._mongoClientPromise = client.connect();
-    clientPromise = global._mongoClientPromise;
   }
+  clientPromise = global._mongoClientPromise;
 } else {
   clientPromise = client.connect();
 }
 
-// Exporta clientPromise como exportación predeterminada
 export default clientPromise;
